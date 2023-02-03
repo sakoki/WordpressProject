@@ -34,7 +34,7 @@ variable "ami_id" {
 }
 
 variable "vpc_id" {
-    type string
+    type = string
     default = "<insert here>"
 }
 

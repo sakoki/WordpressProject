@@ -1,0 +1,15 @@
+---
+#System Settings
+php_modules: [ 'php-curl', 'php-gd', 'php-mbstring', 'php-xml', 'php-xmlrpc', 'php-soap', 
+'php-intl', 'php-zip' ]
+ 
+#MySQL Settings
+mysql_root_password: "root_12345"
+mysql_db: "wordpress"
+mysql_user: "koki"
+mysql_password: "password"
+ 
+#HTTP Settings
+http_host: "wordpressdemo"  # Domain Name
+http_conf: "wordpressdemo.conf"  # Name of config file created within apache
+http_port: "80"

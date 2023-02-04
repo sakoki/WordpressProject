@@ -33,6 +33,6 @@ resource "aws_instance" "web" {
         command = "echo ${self.public_ip} > myhosts"
     }
     provisioner "local-exec" {
-        command = "ansible-playbook -i myhosts --user ${var.ssh_user} --private-key ${var.private_key_path} wordpress.yml"
+        command = "ansible-playbook -i myhosts --user ${var.ssh_user} --private-key ${var.private_key_path} playbook.yml"
     }
 }

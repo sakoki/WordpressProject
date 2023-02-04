@@ -24,6 +24,8 @@ Required Tools:
 
 ### Install pre-requisite software on host machine
 
+All required files can be easily downloaded by running the `install.sh` bash script included in this repository. Below is a step-by-step process of installing each tool.
+
 1.  Installing Terraform from APT repository
 
 ```bash
@@ -151,7 +153,7 @@ variable "ami_id" {
 }
 
 variable "vpc_id" {
-    type string
+    type = string
     default = "<insert here>"
 }
 
@@ -277,7 +279,7 @@ resource "aws_instance" "web" {
 ```terraform
 output "instance_public_ip" {
     description = "Public IP of target EC2 instance for Wordpress Server"
-    value = aws_instance.web.public_ip
+     value = aws_instance.web[0].public_ip
 }
 ```
 
@@ -578,8 +580,8 @@ require_once( ABSPATH . 'wp-settings.php' );
     <p align='center'>
         <img src="./images/terraform_apply_confirmation.png" width=750, height=300>
     </p>
-2.  Type the public ip of the wordpress server to the browser search bar to see the wordpress homepage
+2.  Type the public ip of the wordpress server to the browser search bar to see the wordpress configuration homepage
     <p align='center'>
         <img src="./images/confirmation_of_wordpress.png" width=750, height=300>
     </p>
-3. If you see the wordpress configuration page, you have successfully completed this assignment. 
+3. If you see the wordpress configuration page, you have successfully completed this assignment.

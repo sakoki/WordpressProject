@@ -443,19 +443,22 @@ require_once( ABSPATH . 'wp-settings.php' );
     - vars/default.yml
 
   tasks:
-    # Install required files and dependencies
+  # Install required files and dependencies
     - name: Install prerequisites
       apt: name=aptitude update_cache=yes state=latest force_apt_get=yes
+      tags: [ system ]
 
-    - name: Install LAMP Packages
+    - name: Install LAMP Linux Apache MySQL PHP Packages
       apt: name={{ item }} update_cache=yes state=latest
       loop: [ 'apache2', 'mysql-server', 'python3-pymysql', 'php', 'php-mysql', 'libapache2-mod-php' ]
+      tags: [ system ]
 
     - name: Install PHP Extensions
       apt: name={{ item }} update_cache=yes state=latest
       loop: "{{ php_modules }}"
+      tags: [ system ]
 
-    # Apache Configuration
+  # Apache Configuration
     - name: Create document root
       file:
         path: "/var/www/{{ http_host }}"
@@ -463,32 +466,38 @@ require_once( ABSPATH . 'wp-settings.php' );
         owner: "www-data"
         group: "www-data"
         mode: '0755'
+      tags: [ apache ]
 
     - name: Set up Apache VirtualHost
       template:
         src: "files/apache.conf.j2"
         dest: "/etc/apache2/sites-available/{{ http_conf }}"
       notify: Reload Apache
+      tags: [ apache ]
 
     - name: Enable rewrite module
       shell: /usr/sbin/a2enmod rewrite
       notify: Reload Apache
+      tags: [ apache ]
 
-    # a2ensite generates symlinks in /etc/apache2/sites-enabled
+  # a2ensite generates symlinks in /etc/apache2/sites-enabled
     - name: Enable new site
       shell: /usr/sbin/a2ensite {{ http_conf }}
       notify: Reload Apache
+      tags: [ apache ]
 
     - name: Disable default Apache site
       shell: /usr/sbin/a2dissite 000-default.conf
       notify: Restart Apache
+      tags: [ apache ]
 
-    # MySQL Configuration
+  # MySQL Configuration
     - name: Set the root password
       mysql_user:
         name: root
         password: "{{ mysql_root_password }}"
         login_unix_socket: /var/run/mysqld/mysqld.sock
+      tags: [ mysql, mysql-root ]
 
     - name: Remove all anonymous user accounts
       mysql_user:
@@ -497,6 +506,7 @@ require_once( ABSPATH . 'wp-settings.php' );
         state: absent
         login_user: root
         login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
 
     - name: Remove the MySQL test database
       mysql_db:
@@ -504,6 +514,7 @@ require_once( ABSPATH . 'wp-settings.php' );
         state: absent
         login_user: root
         login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
 
     - name: Creates database for WordPress
       mysql_db:
@@ -511,6 +522,7 @@ require_once( ABSPATH . 'wp-settings.php' );
         state: present
         login_user: root
         login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
 
     - name: Create MySQL user for WordPress
       mysql_user:
@@ -520,21 +532,24 @@ require_once( ABSPATH . 'wp-settings.php' );
         state: present
         login_user: root
         login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
 
-    # UFW (Ubuntu Fire Wall) Configuration
+  # UFW Configuration
     - name: "UFW - Allow HTTP on port {{ http_port }}"
       ufw:
         rule: allow
         port: "{{ http_port }}"
         proto: tcp
+      tags: [ system ]
 
-    # WordPress Configuration
+  # WordPress Configuration
     - name: Download and unpack latest WordPress
       unarchive:
         src: https://wordpress.org/latest.tar.gz
         dest: "/var/www/{{ http_host }}"
         remote_src: yes
         creates: "/var/www/{{ http_host }}/wordpress"
+      tags: [ wordpress ]
 
     - name: Set ownership
       file:
@@ -543,17 +558,21 @@ require_once( ABSPATH . 'wp-settings.php' );
         recurse: yes
         owner: www-data
         group: www-data
+      tags: [ wordpress ]
 
     - name: Set permissions for directories
       shell: "/usr/bin/find /var/www/{{ http_host }}/wordpress/ -type d -exec chmod 750 {} \\;"
+      tags: [ wordpress ]
 
     - name: Set permissions for files
       shell: "/usr/bin/find /var/www/{{ http_host }}/wordpress/ -type f -exec chmod 640 {} \\;"
+      tags: [ wordpress ]
 
     - name: Set up wp-config
       template:
         src: "files/wp-config.php.j2"
         dest: "/var/www/{{ http_host }}/wordpress/wp-config.php"
+      tags: [ wordpress ]
 
   handlers:
     - name: Reload Apache
